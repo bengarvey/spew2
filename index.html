@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spew 2 - Tetris with a Twist</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="game-container">
+        <header class="game-header">
+            <h1 class="game-title">SPEW 2</h1>
+            <div class="game-info">
+                <div class="score-display">
+                    <span class="label">SCORE:</span>
+                    <span id="score" class="value">0</span>
+                </div>
+                <div class="level-display">
+                    <span class="label">LEVEL:</span>
+                    <span id="level" class="value">0</span>
+                </div>
+                <div class="lines-display">
+                    <span class="label">LINES:</span>
+                    <span id="lines" class="value">0</span>
+                </div>
+            </div>
+        </header>
+
+        <main class="game-main">
+            <div class="game-board-container">
+                <canvas id="gameCanvas" width="700" height="600"></canvas>
+                <div id="gameOverlay" class="game-overlay hidden">
+                    <div class="overlay-content">
+                        <h2 id="overlayTitle">GAME OVER</h2>
+                        <p id="overlayMessage">Press SPACE to restart</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="game-sidebar">
+                <div class="next-piece">
+                    <h3>NEXT</h3>
+                    <canvas id="nextCanvas" width="120" height="120"></canvas>
+                </div>
+                
+                <div class="controls">
+                    <h3>CONTROLS</h3>
+                    <div class="control-list">
+                        <div class="control-item">
+                            <span class="key">←→</span>
+                            <span class="action">Move</span>
+                        </div>
+                        <div class="control-item">
+                            <span class="key">↓</span>
+                            <span class="action">Drop</span>
+                        </div>
+                        <div class="control-item">
+                            <span class="key">↑</span>
+                            <span class="action">Rotate</span>
+                        </div>
+                        <div class="control-item">
+                            <span class="key">SPACE</span>
+                            <span class="action">Pause</span>
+                        </div>
+                        <div class="control-item">
+                            <span class="key">ESC</span>
+                            <span class="action">Menu</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="start-level">
+                    <h3>START LEVEL</h3>
+                    <div class="level-selector">
+                        <button id="levelDown" class="level-btn">-</button>
+                        <span id="startLevelDisplay" class="level-display">0</span>
+                        <button id="levelUp" class="level-btn">+</button>
+                    </div>
+                </div>
+                
+                <div class="mobile-controls">
+                    <div class="control-row">
+                        <button id="rotateBtn" class="control-btn">ROTATE</button>
+                    </div>
+                    <div class="control-row">
+                        <button id="leftBtn" class="control-btn">←</button>
+                        <button id="downBtn" class="control-btn">↓</button>
+                        <button id="rightBtn" class="control-btn">→</button>
+                    </div>
+                    <div class="control-row">
+                        <button id="pauseBtn" class="control-btn">PAUSE</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <div id="menu" class="menu hidden">
+            <div class="menu-content">
+                <h2>MENU</h2>
+                <button id="restartBtn" class="menu-btn">RESTART</button>
+                <button id="resumeBtn" class="menu-btn">RESUME</button>
+                <button id="quitBtn" class="menu-btn">QUIT</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="game-constants.js"></script>
+    <script src="game.js"></script>
+</body>
+</html> 
