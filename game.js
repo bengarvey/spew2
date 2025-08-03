@@ -98,12 +98,97 @@ class Spew2Game {
         document.getElementById('levelUp').addEventListener('click', () => this.changeStartLevel(1));
         document.getElementById('levelDown').addEventListener('click', () => this.changeStartLevel(-1));
         
-        // Mobile controls
-        document.getElementById('leftBtn').addEventListener('click', () => this.movePiece(-1, 0));
-        document.getElementById('rightBtn').addEventListener('click', () => this.movePiece(1, 0));
-        document.getElementById('downBtn').addEventListener('click', () => this.movePiece(0, 1));
-        document.getElementById('rotateBtn').addEventListener('click', () => this.rotatePiece());
-        document.getElementById('pauseBtn').addEventListener('click', () => this.togglePause());
+        // Touch-based mobile controls
+        this.initTouchControls();
+    }
+    
+    initTouchControls() {
+        let touchStartX = 0;
+        let touchStartY = 0;
+        let touchStartTime = 0;
+        let isSwiping = false;
+        
+        const gameContainer = document.querySelector('.game-container');
+        
+        gameContainer.addEventListener('touchstart', (e) => {
+            if (this.gameOver || this.paused) return;
+            
+            const touch = e.touches[0];
+            touchStartX = touch.clientX;
+            touchStartY = touch.clientY;
+            touchStartTime = Date.now();
+            isSwiping = false;
+            
+            e.preventDefault();
+        }, { passive: false });
+        
+        gameContainer.addEventListener('touchmove', (e) => {
+            if (this.gameOver || this.paused) return;
+            
+            const touch = e.touches[0];
+            const deltaX = touch.clientX - touchStartX;
+            const deltaY = touch.clientY - touchStartY;
+            const deltaTime = Date.now() - touchStartTime;
+            
+            // Detect swipe gesture
+            if (deltaTime > 100 && Math.abs(deltaY) > 30) {
+                isSwiping = true;
+            }
+            
+            e.preventDefault();
+        }, { passive: false });
+        
+        gameContainer.addEventListener('touchend', (e) => {
+            if (this.gameOver || this.paused) return;
+            
+            const touch = e.changedTouches[0];
+            const deltaX = touch.clientX - touchStartX;
+            const deltaY = touch.clientY - touchStartY;
+            const deltaTime = Date.now() - touchStartTime;
+            
+            // If it's a quick tap (less than 200ms and small movement)
+            if (deltaTime < 200 && Math.abs(deltaX) < 20 && Math.abs(deltaY) < 20) {
+                const screenWidth = window.innerWidth;
+                const touchX = touch.clientX;
+                
+                // Left third of screen - move left
+                if (touchX < screenWidth / 3) {
+                    this.movePiece(-1, 0);
+                    this.flashTouchZone('left');
+                }
+                // Right third of screen - move right
+                else if (touchX > (screenWidth * 2) / 3) {
+                    this.movePiece(1, 0);
+                    this.flashTouchZone('right');
+                }
+                // Middle third - rotate piece
+                else {
+                    this.rotatePiece();
+                    this.flashTouchZone('center');
+                }
+            }
+            // If it's a swipe down - drop piece faster
+            else if (isSwiping && deltaY > 50) {
+                this.movePiece(0, 1);
+            }
+            
+            e.preventDefault();
+        }, { passive: false });
+        
+        // Prevent default touch behaviors that might interfere
+        gameContainer.addEventListener('touchcancel', (e) => {
+            e.preventDefault();
+        }, { passive: false });
+    }
+    
+    flashTouchZone(zone) {
+        const touchZone = document.querySelector(`.touch-zone.${zone}`);
+        if (touchZone) {
+            touchZone.style.opacity = '0.5';
+            setTimeout(() => {
+                touchZone.style.opacity = '0.1';
+            }, 150);
+        }
     }
     
     initUI() {
@@ -509,8 +594,10 @@ class Spew2Game {
         this.paused = !this.paused;
         if (this.paused) {
             this.showPauseOverlay();
+            document.body.classList.add('game-paused');
         } else {
             this.hideOverlay();
+            document.body.classList.remove('game-paused');
         }
     }
     
@@ -534,6 +621,7 @@ class Spew2Game {
         title.style.color = UI_COLORS.gameOverText;
         message.textContent = 'Press SPACE to restart';
         overlay.classList.remove('hidden');
+        document.body.classList.add('game-over');
     }
     
     hideOverlay() {
@@ -570,6 +658,7 @@ class Spew2Game {
         this.spawnNextPiece();
         this.hideOverlay();
         this.hideMenu();
+        document.body.classList.remove('game-over', 'game-paused');
         this.initUI();
         
         this.gameRunning = true;

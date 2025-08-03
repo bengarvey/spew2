@@ -9,7 +9,7 @@ A retro-style Tetris game with rotating and zooming effects that activate at hig
 - Zoom in/out effects starting at level 4
 - Random rotation direction changes at level 6
 - Retro 8-bit styling with accessible colors
-- Mobile-friendly responsive design
+- Intuitive touch-based mobile controls
 - Sound effects using Web Audio API
 - Pause and menu system
 
@@ -22,6 +22,14 @@ A retro-style Tetris game with rotating and zooming effects that activate at hig
    - **↑** Rotate piece
    - **SPACE** Pause/resume
    - **ESC** Open menu
+
+### Mobile Controls
+
+On mobile devices, use touch gestures:
+- **Tap left side** of screen to move piece left
+- **Tap right side** of screen to move piece right  
+- **Tap center** of screen to rotate piece
+- **Swipe down** to drop piece faster
 
 ## Game Mechanics
 
