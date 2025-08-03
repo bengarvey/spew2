@@ -1,6 +1,6 @@
-# Spew 2 - Tetris with a Twist
+# Spew 2
 
-A retro-style Tetris game with rotating and zooming effects that activate at higher levels, inspired by the original Spew 2 written in Perl TCL/Tk.
+A retro-style Tetris game with rotating and zooming effects that activate at higher levels, inspired by the original Spew written in Perl TCL/Tk.
 
 ## Features
 
