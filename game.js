@@ -107,6 +107,8 @@ class Spew2Game {
         let touchStartY = 0;
         let touchStartTime = 0;
         let isSwiping = false;
+        let isHoldingDown = false;
+        let dropInterval = null;
         
         const gameContainer = document.querySelector('.game-container');
         
@@ -118,6 +120,28 @@ class Spew2Game {
             touchStartY = touch.clientY;
             touchStartTime = Date.now();
             isSwiping = false;
+            isHoldingDown = false;
+            
+            // Check if touch is in the bottom area of the game grid
+            const canvas = this.canvas;
+            const canvasRect = canvas.getBoundingClientRect();
+            const bottomAreaHeight = 100;
+            
+            if (touch.clientY >= canvasRect.bottom - bottomAreaHeight && touch.clientY <= canvasRect.bottom) {
+                // Start continuous dropping immediately
+                isHoldingDown = true;
+                console.log('Started holding down - continuous drop active');
+                this.flashTouchZone('bottom');
+                this.showHoldingDown(true);
+                this.movePiece(0, 1);
+                
+                // Start continuous dropping
+                dropInterval = setInterval(() => {
+                    if (!this.gameOver && !this.paused) {
+                        this.movePiece(0, 1);
+                    }
+                }, 100); // Drop every 100ms while holding
+            }
             
             e.preventDefault();
         }, { passive: false });
@@ -126,13 +150,39 @@ class Spew2Game {
             if (this.gameOver || this.paused) return;
             
             const touch = e.touches[0];
-            const deltaX = touch.clientX - touchStartX;
-            const deltaY = touch.clientY - touchStartY;
-            const deltaTime = Date.now() - touchStartTime;
             
-            // Detect swipe gesture
-            if (deltaTime > 100 && Math.abs(deltaY) > 30) {
-                isSwiping = true;
+            // Check if touch is in the bottom area of the game grid
+            const canvas = this.canvas;
+            const canvasRect = canvas.getBoundingClientRect();
+            const bottomAreaHeight = 100;
+            
+            if (touch.clientY >= canvasRect.bottom - bottomAreaHeight && touch.clientY <= canvasRect.bottom) {
+                // Start continuous dropping if not already started
+                if (!isHoldingDown) {
+                    isHoldingDown = true;
+                    console.log('Started holding down - continuous drop active');
+                    this.flashTouchZone('bottom');
+                    this.showHoldingDown(true);
+                    this.movePiece(0, 1);
+                    
+                    // Start continuous dropping
+                    dropInterval = setInterval(() => {
+                        if (!this.gameOver && !this.paused) {
+                            this.movePiece(0, 1);
+                        }
+                    }, 100); // Drop every 100ms while holding
+                }
+            } else {
+                // Stop continuous dropping if moved out of bottom area
+                if (isHoldingDown) {
+                    isHoldingDown = false;
+                    console.log('Stopped holding down - continuous drop stopped');
+                    this.showHoldingDown(false);
+                    if (dropInterval) {
+                        clearInterval(dropInterval);
+                        dropInterval = null;
+                    }
+                }
             }
             
             e.preventDefault();
@@ -140,6 +190,16 @@ class Spew2Game {
         
         gameContainer.addEventListener('touchend', (e) => {
             if (this.gameOver || this.paused) return;
+            
+            // Stop continuous dropping
+            if (isHoldingDown) {
+                isHoldingDown = false;
+                this.showHoldingDown(false);
+                if (dropInterval) {
+                    clearInterval(dropInterval);
+                    dropInterval = null;
+                }
+            }
             
             const touch = e.changedTouches[0];
             const deltaX = touch.clientX - touchStartX;
@@ -187,6 +247,15 @@ class Spew2Game {
         
         // Prevent default touch behaviors that might interfere
         gameContainer.addEventListener('touchcancel', (e) => {
+            // Stop continuous dropping
+            if (isHoldingDown) {
+                isHoldingDown = false;
+                this.showHoldingDown(false);
+                if (dropInterval) {
+                    clearInterval(dropInterval);
+                    dropInterval = null;
+                }
+            }
             e.preventDefault();
         }, { passive: false });
     }
@@ -198,6 +267,23 @@ class Spew2Game {
             setTimeout(() => {
                 touchZone.style.opacity = '0.1';
             }, 150);
+        }
+    }
+    
+    showHoldingDown(isHolding) {
+        const bottomZone = document.querySelector('.touch-zone.bottom');
+        if (bottomZone) {
+            if (isHolding) {
+                bottomZone.style.opacity = '0.8';
+                bottomZone.style.animation = 'pulse 0.5s infinite';
+                console.log('Visual feedback: Holding down active');
+            } else {
+                bottomZone.style.opacity = '0.1';
+                bottomZone.style.animation = 'none';
+                console.log('Visual feedback: Holding down stopped');
+            }
+        } else {
+            console.log('Bottom touch zone not found!');
         }
     }
     

@@ -230,7 +230,7 @@ body {
     text-align: center;
 }
 
-/* Touch control zones - only visible on mobile */
+/* Touch control zones - visible on all devices for testing */
 .touch-zones {
     position: fixed;
     top: 0;
@@ -239,7 +239,7 @@ body {
     height: 100%;
     pointer-events: none;
     z-index: 1;
-    display: none;
+    display: block;
 }
 
 .touch-zone {
@@ -276,17 +276,10 @@ body {
     background: linear-gradient(to top, rgba(255, 0, 255, 0.3), transparent);
 }
 
-/* Show touch zones on mobile */
-@media (max-width: 768px) {
-    .touch-zones {
-        display: block;
-    }
-    
-    /* Hide touch zones when game is paused or over */
-    .game-paused .touch-zones,
-    .game-over .touch-zones {
-        display: none;
-    }
+/* Hide touch zones when game is paused or over */
+.game-paused .touch-zones,
+.game-over .touch-zones {
+    display: none;
 }
 
 .menu {
@@ -424,4 +417,10 @@ body {
 
 .tetris-flash {
     animation: tetris-flash 0.5s ease-in-out;
+}
+
+/* Animation for holding down */
+@keyframes pulse {
+    0%, 100% { opacity: 0.8; }
+    50% { opacity: 0.4; }
 } 
