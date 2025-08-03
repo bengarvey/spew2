@@ -29,7 +29,7 @@ On mobile devices, use touch gestures:
 - **Tap left side** of screen to move piece left
 - **Tap right side** of screen to move piece right  
 - **Tap center** of screen to rotate piece
-- **Swipe down** to drop piece faster
+- **Tap bottom area** of game grid to drop piece faster
 
 ## Game Mechanics
 

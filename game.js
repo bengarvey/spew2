@@ -150,6 +150,20 @@ class Spew2Game {
             if (deltaTime < 200 && Math.abs(deltaX) < 20 && Math.abs(deltaY) < 20) {
                 const screenWidth = window.innerWidth;
                 const touchX = touch.clientX;
+                const touchY = touch.clientY;
+                
+                // Check if touch is in the bottom area of the game grid
+                const canvas = this.canvas;
+                const canvasRect = canvas.getBoundingClientRect();
+                const bottomAreaHeight = 100; // Height of the bottom area for drop control
+                
+                // If touch is in the bottom area of the canvas, drop the piece
+                if (touchY >= canvasRect.bottom - bottomAreaHeight && touchY <= canvasRect.bottom) {
+                    this.movePiece(0, 1);
+                    this.flashTouchZone('bottom');
+                    e.preventDefault();
+                    return;
+                }
                 
                 // Left third of screen - move left
                 if (touchX < screenWidth / 3) {
@@ -166,10 +180,6 @@ class Spew2Game {
                     this.rotatePiece();
                     this.flashTouchZone('center');
                 }
-            }
-            // If it's a swipe down - drop piece faster
-            else if (isSwiping && deltaY > 50) {
-                this.movePiece(0, 1);
             }
             
             e.preventDefault();
