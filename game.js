@@ -30,7 +30,11 @@ class Spew2Game {
         
         this.sounds = {};
         this.audioContext = null;
+        this.backgroundMusic = null;
+        this.musicPlaying = false;
+        this.musicVolume = MUSIC_CONFIG.defaultVolume;
         this.initSounds();
+        this.initMusic();
         this.initEventListeners();
         this.initUI();
         
@@ -86,6 +90,77 @@ class Spew2Game {
             oscillator.start(audioContext.currentTime);
             oscillator.stop(audioContext.currentTime + duration);
         };
+    }
+    
+    initMusic() {
+        if (!MUSIC_CONFIG.enabled) return;
+        
+        this.backgroundMusic = document.getElementById('backgroundMusic');
+        if (!this.backgroundMusic) {
+            console.warn('Background music element not found');
+            return;
+        }
+        
+        // Set initial volume
+        this.backgroundMusic.volume = this.musicVolume;
+        
+        // Add error handling for audio loading
+        this.backgroundMusic.addEventListener('error', (e) => {
+            console.error('Error loading background music:', e);
+            const musicToggle = document.getElementById('musicToggle');
+            if (musicToggle) {
+                musicToggle.textContent = 'ERROR';
+                musicToggle.disabled = true;
+                musicToggle.style.backgroundColor = '#FF0000';
+            }
+        });
+        
+        // Add event listeners for music controls
+        const musicToggle = document.getElementById('musicToggle');
+        const musicVolume = document.getElementById('musicVolume');
+        
+        if (musicToggle) {
+            musicToggle.addEventListener('click', () => this.toggleMusic());
+        }
+        
+        if (musicVolume) {
+            musicVolume.value = this.musicVolume * 100;
+            musicVolume.addEventListener('input', (e) => {
+                this.setMusicVolume(e.target.value / 100);
+            });
+        }
+        
+        // Try to auto-play music if enabled
+        if (MUSIC_CONFIG.autoPlay) {
+            this.attemptAutoPlay();
+        }
+    }
+    
+    attemptAutoPlay() {
+        // Try to play music immediately
+        this.playMusic();
+        
+        // If that fails, set up a fallback to start music on first user interaction
+        if (!this.musicPlaying) {
+            console.log('Autoplay blocked, setting up fallback for user interaction');
+            
+            // Create a one-time event listener for any user interaction
+            const startMusicOnInteraction = () => {
+                if (!this.musicPlaying && MUSIC_CONFIG.autoPlay) {
+                    console.log('Starting music on user interaction');
+                    this.playMusic();
+                    // Remove the event listeners after first use
+                    document.removeEventListener('keydown', startMusicOnInteraction);
+                    document.removeEventListener('click', startMusicOnInteraction);
+                    document.removeEventListener('touchstart', startMusicOnInteraction);
+                }
+            };
+            
+            // Listen for various user interactions
+            document.addEventListener('keydown', startMusicOnInteraction, { once: true });
+            document.addEventListener('click', startMusicOnInteraction, { once: true });
+            document.addEventListener('touchstart', startMusicOnInteraction, { once: true });
+        }
     }
     
     initEventListeners() {
@@ -306,6 +381,12 @@ class Spew2Game {
             this.showMenu();
             return;
         }
+
+        // Handle pause/unpause with spacebar even when paused
+        if (e.code === 'Space') {
+            this.togglePause();
+            return;
+        }
         
         if (this.paused) return;
         
@@ -324,6 +405,9 @@ class Spew2Game {
                 break;
             case 'Space':
                 this.togglePause();
+                break;
+            case 'KeyM':
+                this.toggleMusic();
                 break;
         }
     }
@@ -554,6 +638,64 @@ class Spew2Game {
         }
     }
     
+    toggleMusic() {
+        if (this.musicPlaying) {
+            this.stopMusic();
+        } else {
+            this.playMusic();
+        }
+    }
+    
+    playMusic() {
+        if (!this.backgroundMusic || !MUSIC_CONFIG.enabled) return;
+        
+        // Resume audio context if suspended (required for autoplay policies)
+        if (this.audioContext && this.audioContext.state === 'suspended') {
+            this.audioContext.resume();
+        }
+        
+        this.backgroundMusic.play().then(() => {
+            this.musicPlaying = true;
+            this.updateMusicButton();
+            console.log('Music started playing');
+        }).catch(error => {
+            console.warn('Failed to play music:', error);
+            // Update button state even if play fails
+            this.musicPlaying = false;
+            this.updateMusicButton();
+        });
+    }
+    
+    stopMusic() {
+        if (!this.backgroundMusic) return;
+        
+        this.backgroundMusic.pause();
+        this.backgroundMusic.currentTime = 0;
+        this.musicPlaying = false;
+        this.updateMusicButton();
+        console.log('Music stopped');
+    }
+    
+    setMusicVolume(volume) {
+        this.musicVolume = Math.max(0, Math.min(1, volume));
+        if (this.backgroundMusic) {
+            this.backgroundMusic.volume = this.musicVolume;
+        }
+        
+        // Update volume slider display
+        const musicVolume = document.getElementById('musicVolume');
+        if (musicVolume) {
+            musicVolume.value = this.musicVolume * 100;
+        }
+    }
+    
+    updateMusicButton() {
+        const musicToggle = document.getElementById('musicToggle');
+        if (musicToggle) {
+            musicToggle.textContent = this.musicPlaying ? 'PAUSE' : 'PLAY';
+        }
+    }
+    
 
     
     drawBoard() {
@@ -691,9 +833,19 @@ class Spew2Game {
         if (this.paused) {
             this.showPauseOverlay();
             document.body.classList.add('game-paused');
+            // Pause music when game is paused
+            if (this.backgroundMusic && this.musicPlaying) {
+                this.backgroundMusic.pause();
+            }
         } else {
             this.hideOverlay();
             document.body.classList.remove('game-paused');
+            // Resume music when game is resumed
+            if (this.backgroundMusic && this.musicPlaying) {
+                this.backgroundMusic.play().catch(error => {
+                    console.warn('Failed to resume music:', error);
+                });
+            }
         }
     }
     
