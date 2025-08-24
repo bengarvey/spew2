@@ -122,4 +122,13 @@ const SOUND_CONFIG = {
     tetris: 'tetris.wav',
     gameOver: 'game-over.wav'
   }
+};
+
+// Music settings
+const MUSIC_CONFIG = {
+  enabled: true,
+  defaultVolume: 0.5,
+  autoPlay: true,
+  fadeInDuration: 2000, // milliseconds
+  fadeOutDuration: 1000 // milliseconds
 }; 
