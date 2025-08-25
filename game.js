@@ -28,6 +28,8 @@ class Spew2Game {
         this.zoomLevel = 1;
         this.zoomTime = 0;
         
+        this.rotationEnabled = false; // New property to control when rotation starts
+        
         this.sounds = {};
         this.audioContext = null;
         this.backgroundMusic = null;
@@ -550,6 +552,18 @@ class Spew2Game {
             this.lines += linesCleared;
             this.score += GAME_CONFIG.SCORE_MULTIPLIERS[linesCleared] * (this.level + 1);
             
+            // Enable rotation after the first line is cleared
+            if (!this.rotationEnabled) {
+                this.rotationEnabled = true;
+                console.log('Rotation enabled after first line clear!');
+                
+                // Add visual effect when rotation starts
+                this.canvas.classList.add('rotation-start');
+                setTimeout(() => {
+                    this.canvas.classList.remove('rotation-start');
+                }, 1000);
+            }
+            
             if (linesCleared === 4) {
                 this.playSound('tetris');
                 this.triggerTetrisEffect();
@@ -561,6 +575,7 @@ class Spew2Game {
             this.updateLevel();
             this.updateLines();
             this.updateDropSpeed();
+            this.updateRotationSpeed();
         }
     }
     
@@ -581,9 +596,10 @@ class Spew2Game {
     }
     
     updateRotationSpeed() {
-        if (this.level >= GAME_CONFIG.ROTATION_START_LEVEL) {
-            this.rotationSpeed = GAME_CONFIG.BASE_ROTATION_SPEED + 
-                (this.level - GAME_CONFIG.ROTATION_START_LEVEL) * GAME_CONFIG.ROTATION_SPEED_INCREASE;
+        if (this.rotationEnabled) {
+            // Start with a lower base speed and increase gradually
+            this.rotationSpeed = GAME_CONFIG.BASE_ROTATION_SPEED * 0.5 + 
+                (this.level * GAME_CONFIG.ROTATION_SPEED_INCREASE * 0.3);
         } else {
             this.rotationSpeed = 0;
         }
@@ -610,7 +626,7 @@ class Spew2Game {
             let direction = this.rotationDirection;
             let speed = 0;
             
-            if (this.level >= GAME_CONFIG.ROTATION_START_LEVEL) {
+            if (this.rotationEnabled) {
                 speed = this.rotationSpeed;
                 
                 if (this.level >= GAME_CONFIG.RANDOM_ROTATION_START_LEVEL) {
@@ -895,6 +911,7 @@ class Spew2Game {
         this.zoomLevel = 1;
         this.rotationDirection = 1;
         this.zoomTime = 0;
+        this.rotationEnabled = false; // Reset rotation for new game
         
         this.updateDropSpeed();
         this.updateRotationSpeed();

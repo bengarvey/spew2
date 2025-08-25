@@ -127,7 +127,7 @@ const SOUND_CONFIG = {
 // Music settings
 const MUSIC_CONFIG = {
   enabled: true,
-  defaultVolume: 0.5,
+  defaultVolume: 0.8,
   autoPlay: true,
   fadeInDuration: 2000, // milliseconds
   fadeOutDuration: 1000 // milliseconds
